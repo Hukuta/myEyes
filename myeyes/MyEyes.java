@@ -25,19 +25,21 @@ public class MyEyes {
     public static Boolean working = true;
     // is asided
     protected static Boolean asided = false;
-
-    protected static int timerInterval = 1;
+    //timer interval
+    protected static int timerInterval = 10;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-//*
-        //debug values
-        interval = 10;
-        breakTime = 5;
-        interval2 = 5;
-//*/
+        if(args.length == 1 && args[0].equals("test")) {
+            //debug values
+            interval = 10;
+            breakTime = 5;
+            interval2 = 5;
+            timerInterval = 1;
+        }
+        
         ActionListener taskPerformer = new ActionListener() {
 
             @Override
@@ -92,9 +94,9 @@ public class MyEyes {
         }
         */
          
-        while(true){
+        while (true) {
             try {
-                Thread.sleep(5);
+                Thread.sleep((int) interval / 2);
             } catch (InterruptedException ex) {
                 System.out.println(ex.getMessage());
             }
