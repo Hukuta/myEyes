@@ -3,6 +3,7 @@ package myeyes;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Formatter;
 import javax.swing.Timer;
 
 /**
@@ -41,14 +42,12 @@ public class BlockForm extends javax.swing.JFrame {
         text.setBackground(new java.awt.Color(0, 0, 0));
         text.setFont(new java.awt.Font("Arial", 0, 36)); // NOI18N
         text.setForeground(java.awt.Color.gray);
-        text.setText("Take a break!       ");
-        text.setLocation((int) screenSize.height / 2, (int) screenSize.width / 2);
-        text.setLayout(this.getLayout());
+        text.setText("               Take a break!       ");
         getContentPane().add(text);
 
         javax.swing.JButton aButton = new javax.swing.JButton();
 
-        aButton.setText("More time");
+        aButton.setText("More " + timeF(MyEyes.interval2));
         aButton.setAlignmentX(1.0F);
         aButton.setAlignmentY(1.5F);
         aButton.setAutoscrolls(true);
@@ -63,6 +62,29 @@ public class BlockForm extends javax.swing.JFrame {
         });
         getContentPane().add(aButton);
 
+        javax.swing.JLabel text2 = new javax.swing.JLabel();
+        text2.setBackground(new java.awt.Color(0, 0, 0));
+        text2.setFont(new java.awt.Font("Arial", 0, 16));
+        text2.setForeground(java.awt.Color.gray);
+        text2.setText("                                                  or  ");
+        //text2.setLayout(this.getLayout());
+        getContentPane().add(text2);
+
+        javax.swing.JButton close2workButton = new javax.swing.JButton();
+        close2workButton.setText("More " + timeF(MyEyes.interval));
+        close2workButton.setAlignmentX(1.0F);    
+        close2workButton.setAlignmentY(1.5F);
+        close2workButton.setAutoscrolls(true);
+        close2workButton.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        close2workButton.setMargin(new java.awt.Insets(1, 1, 1, 1));
+        close2workButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {                
+                BlockForm.this.back2work();
+            }
+        });
+        getContentPane().add(close2workButton);
+        
         setPreferredSize(screenSize);
         setSize(screenSize);
 
@@ -89,6 +111,21 @@ public class BlockForm extends javax.swing.JFrame {
         //exit window
         dispose();
         
+    }
+
+    public String timeF(Integer longTime) {
+        float minuts = 0, seconds = longTime;
+        minuts = (int) (longTime / 60);
+        seconds -= minuts * 60;        
+        if (minuts > 0) {
+            if (seconds > 0) {                
+                return (int) minuts + " min " + (int)seconds + " sec";
+            } else {
+                return (int) minuts + " min";
+            }
+        } else {
+            return (int)seconds + " sec";
+        }
     }
 
     /**
@@ -136,41 +173,7 @@ public class BlockForm extends javax.swing.JFrame {
 
     private void opened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_opened
     }//GEN-LAST:event_opened
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(BlockForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(BlockForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(BlockForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(BlockForm.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new BlockForm().setVisible(true);
-            }
-        });
-    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }
