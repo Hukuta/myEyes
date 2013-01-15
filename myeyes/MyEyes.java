@@ -13,32 +13,36 @@ import javax.swing.Timer;
  */
 public class MyEyes {
     // Interval between breaks
-    protected static Integer interval = 3000; //50 min
+    public static Integer interval = 3000; //50 min
     // breaks time
     protected static Integer breakTime = 240; //4 min
     // interval if asided
-    protected static Integer interval2 = 240; //4 min
+    public static Integer interval2 = 180; //3 min
 
     // Time passed
-    protected static Long tp;
+    protected static Long tp = new Long(0);
     // First state is working
     public static Boolean working = true;
     // is asided
     protected static Boolean asided = false;
 
+    protected static int timerInterval = 1;
+
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
-        Timer t;
-        tp = new Long(0);
-
+//*
+        //debug values
+        interval = 10;
+        breakTime = 5;
+        interval2 = 5;
+//*/
         ActionListener taskPerformer = new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent evt) {
-                tp += 5;
+                tp += timerInterval;
 
                 if (working) {//Time to make a break ?
                     if (asided) {
@@ -71,7 +75,7 @@ public class MyEyes {
             }
         };
 
-        t = new Timer(5000, taskPerformer);
+        Timer t = new Timer(timerInterval * 1000, taskPerformer);
         t.start();
 
         /*
