@@ -3,6 +3,8 @@ package myeyes;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.Timer;
 
 
@@ -61,7 +63,7 @@ public class MyEyes {
                     //Time to work
                     working = true;
                     tp = new Long(0);
-                    System.out.println("Time to work!");
+                    System.out.println(curTime() + " Time to work!");
                 }
             }
 
@@ -76,7 +78,7 @@ public class MyEyes {
                     }
                 });
 
-                System.out.println("Time to relax!");
+                System.out.println(curTime() + " Time to relax!");
             }
         };
 
@@ -96,7 +98,8 @@ public class MyEyes {
             System.out.println(ex.getMessage());
         }
         */
-        System.out.println("Java myEyes program started. Time to work.\n");
+        System.out.println(curTime() 
+                + " Java myEyes program started. Time to work.\n");
 
         while (true) {
             try {
@@ -110,6 +113,12 @@ public class MyEyes {
     public static void aside() {
         asided = true;
         System.gc();
+    }
+
+    protected static String curTime() {
+        Date dNow = new Date();
+        SimpleDateFormat ft = new SimpleDateFormat("kk:mm:ss");
+        return ft.format(dNow);
     }
 
 
