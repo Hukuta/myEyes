@@ -63,7 +63,9 @@ public class MyEyes {
                     //Time to work
                     working = true;
                     tp = new Long(0);
+
                     System.out.println(curTime() + " Time to work!");
+
                 }
             }
 
@@ -98,6 +100,7 @@ public class MyEyes {
             System.out.println(ex.getMessage());
         }
         */
+
         System.out.println(curTime() 
                 + " Java myEyes program started. Time to work.\n");
 
