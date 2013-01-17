@@ -61,6 +61,7 @@ public class MyEyes {
                     //Time to work
                     working = true;
                     tp = new Long(0);
+                    System.out.println("Time to work!");
                 }
             }
 
@@ -74,6 +75,8 @@ public class MyEyes {
                         new BlockForm().setVisible(true);
                     }
                 });
+
+                System.out.println("Time to relax!");
             }
         };
 
@@ -93,7 +96,8 @@ public class MyEyes {
             System.out.println(ex.getMessage());
         }
         */
-         
+        System.out.println("Java myEyes program started. Time to work.\n");
+
         while (true) {
             try {
                 Thread.sleep((int) timerInterval / 2);
