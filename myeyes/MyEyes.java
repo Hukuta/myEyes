@@ -96,7 +96,7 @@ public class MyEyes {
          
         while (true) {
             try {
-                Thread.sleep((int) interval / 2);
+                Thread.sleep((int) timerInterval / 2);
             } catch (InterruptedException ex) {
                 System.out.println(ex.getMessage());
             }
