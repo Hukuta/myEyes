@@ -25,8 +25,27 @@ public class BlockForm extends javax.swing.JFrame {
         setLocation(0, border);
         screenSize.height -= border * 2;
 
+        javax.swing.JPanel jPanel0 = new javax.swing.JPanel();
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel0);
+        jPanel0.setBackground(Color.BLACK);
+        jPanel0.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, screenSize.width, Short.MAX_VALUE));
+        jPanel1Layout.setVerticalGroup(
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(0, 30, Short.MAX_VALUE));
+        getContentPane().add(jPanel0);
+
+        javax.swing.JLabel textWaitTime = new javax.swing.JLabel();
+        textWaitTime.setFont(new java.awt.Font("Arial", 0, 16));
+        textWaitTime.setForeground(java.awt.Color.LIGHT_GRAY);
+        textWaitTime.setText("          Break ends at "
+                + MyEyes.curTime(0L + MyEyes.breakTime));
+        getContentPane().add(textWaitTime);
+
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setBackground(Color.BLACK);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -34,11 +53,12 @@ public class BlockForm extends javax.swing.JFrame {
                 .addGap(0, screenSize.width, Short.MAX_VALUE));
         jPanel1Layout.setVerticalGroup(
                 jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGap(0, (int) screenSize.height / 2, Short.MAX_VALUE));
+                .addGap(0, ((int) screenSize.height / 2) -46, Short.MAX_VALUE));
+
         getContentPane().add(jPanel1);
 
+
         javax.swing.JLabel text = new javax.swing.JLabel();
-        text.setBackground(new java.awt.Color(0, 0, 0));
         text.setFont(new java.awt.Font("Arial", 0, 36)); // NOI18N
         text.setForeground(java.awt.Color.gray);
         text.setText("               Take a break!       ");
@@ -78,7 +98,8 @@ public class BlockForm extends javax.swing.JFrame {
         close2workButton.setMargin(new java.awt.Insets(1, 1, 1, 1));
         close2workButton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseReleased(java.awt.event.MouseEvent evt) {                
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                MyEyes.asideLong();
                 BlockForm.this.back2work();
             }
         });

@@ -64,7 +64,7 @@ public class MyEyes {
                     working = true;
                     tp = new Long(0);
 
-                    System.out.println(curTime() + " Time to work!");
+                    System.out.println(curTime(0L) + " Time to work!");
 
                 }
             }
@@ -80,7 +80,7 @@ public class MyEyes {
                     }
                 });
 
-                System.out.println(curTime() + " Time to relax!");
+                System.out.println(curTime(0L) + " Time to relax!");
             }
         };
 
@@ -101,7 +101,7 @@ public class MyEyes {
         }
         */
 
-        System.out.println(curTime() 
+        System.out.println(curTime(0L)
                 + " Java myEyes program started. Time to work.\n");
 
         while (true) {
@@ -115,11 +115,21 @@ public class MyEyes {
 
     public static void aside() {
         asided = true;
+        working = true;
+        tp = new Long(0);
         System.gc();
     }
 
-    protected static String curTime() {
+    public static void asideLong() {
+        aside();
+        asided = false;
+    }
+
+    public static String curTime(Long offset) {
         Date dNow = new Date();
+        if(offset != 0L){
+            dNow.setTime(dNow.getTime() + offset);
+        }
         SimpleDateFormat ft = new SimpleDateFormat("kk:mm:ss");
         return ft.format(dNow);
     }
