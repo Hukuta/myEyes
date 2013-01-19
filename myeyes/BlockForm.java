@@ -41,7 +41,7 @@ public class BlockForm extends javax.swing.JFrame {
         textWaitTime.setFont(new java.awt.Font("Arial", 0, 16));
         textWaitTime.setForeground(java.awt.Color.LIGHT_GRAY);
         textWaitTime.setText("          Break ends at "
-                + MyEyes.curTime(0L + MyEyes.breakTime));
+                + MyEyes.curTime(0L + 1000 * MyEyes.breakTime));
         getContentPane().add(textWaitTime);
 
         javax.swing.JPanel jPanel1 = new javax.swing.JPanel();

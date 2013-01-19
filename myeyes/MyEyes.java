@@ -128,7 +128,7 @@ public class MyEyes {
     public static String curTime(Long offset) {
         Date dNow = new Date();
         if(offset != 0L){
-            dNow.setTime(dNow.getTime() + offset);
+            dNow.setTime(dNow.getTime() + offset);            
         }
         SimpleDateFormat ft = new SimpleDateFormat("kk:mm:ss");
         return ft.format(dNow);
