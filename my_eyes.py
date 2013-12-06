@@ -7,6 +7,7 @@ import os
 import datetime
 import gobject
 import pygtk
+
 pygtk.require('2.0')
 import gtk
 
@@ -31,45 +32,88 @@ class MainWindow:
         # 0 -> work, 1 -> rest, 2 -> postponed
         self.state = 0
 
+        # rate $ per hour
+        self.rate = 10
+
         app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        app_window.set_size_request(450, 100)
+        app_window.set_size_request(450, 200)
         app_window.set_border_width(10)
         app_window.set_title(u'Береги глаза, делай перерывы')
         app_window.connect("delete_event", lambda w, e: gtk.main_quit())
         label = gtk.Label(u'<span size="10500"><b>Не забывай делать перевы.</b></span>')
-        self.timer_label = gtk.Label(u'Рабочее время с момента запуска: 0 сек.')
+        self.timer_label = gtk.Label(u'Время с момента запуска: 0 сек.')
+
+        # program's work time
         self.timer_start = 0
+        # time from the last rest or beginning of resting (if user is resting now)
         self.timer_work = 0
 
-        app_window.set_icon_from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'icon.png'))
+        self.widget_showed = False
 
-        vbox_app = gtk.VBox(False, 0)
-        app_window.add(vbox_app)
-        vbox_app.show()
+        app_window.set_icon_from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'icon.png'))
+        v_box_app = gtk.VBox(False, 0)
+        app_window.add(v_box_app)
+        v_box_app.show()
 
         label.set_use_markup(True)
-        hbox = gtk.HBox(False, 0)
-        hbox.pack_start(label)
+        h_box = gtk.HBox(False, 0)
+        h_box.pack_start(label)
         label.show()
 
         button_rest = gtk.Button(stock=u'Сделать перерыв сейчас')
         button_rest.connect("clicked", lambda w: self.rest())
         button_rest.set_flags(gtk.CAN_DEFAULT)
-        hbox.pack_start(button_rest)
+        h_box.pack_start(button_rest)
 
         button_rest.show()
-        hbox.show()
-        vbox_app.add(hbox)
+        h_box.show()
+        v_box_app.add(h_box)
 
         # Place after association to hbox/vbox to avoid the following error:
         # GtkWarning: gtkwidget.c:5460: widget not within a GtkWindow
         button_rest.grab_default()
 
-        hbox2 = gtk.HBox(False, 0)
-        hbox2.pack_start(self.timer_label)
+        h_box2 = gtk.HBox(False, 0)
+        h_box2.pack_start(self.timer_label)
         self.timer_label.show()
-        hbox2.show()
-        vbox_app.add(hbox2)
+        h_box2.show()
+        v_box_app.add(h_box2)
+
+        label_start_widget = gtk.Label(u'<b>Для оплачиваемой работы:</b>')
+        label_start_widget.set_use_markup(True)
+        h_box = gtk.HBox(False, 0)
+        h_box.pack_start(label_start_widget)
+        label_start_widget.show()
+        h_box.show()
+        v_box_app.add(h_box)
+
+        label_rate = gtk.Label(u'Почасовой тариф')
+        h_box = gtk.HBox(False, 0)
+        h_box.pack_start(label_rate)
+        label_rate.show()
+
+        self.rate_entry = gtk.Entry(6)
+        self.rate_entry.set_width_chars(6)
+        self.rate_entry.set_text(str(self.rate))
+        h_box.pack_start(self.rate_entry)
+        self.rate_entry.show()
+        self.rate_entry.connect('focus-out-event', lambda w, e: self.read_rate())
+
+        label_rate2 = gtk.Label(' ' * 20)
+
+        h_box.pack_start(label_rate2)
+        label_rate2.show()
+
+        self.button_widget = gtk.Button(stock=u'Показать виджет')
+        self.button_widget.connect("clicked",
+                                   lambda w: self.hide_widget() if self.widget_showed else self.show_widget())
+        self.button_widget.set_flags(gtk.CAN_DEFAULT)
+        h_box.pack_start(self.button_widget)
+        self.button_widget.show()
+
+        h_box.show()
+        v_box_app.add(h_box)
+        self.button_widget.grab_default()
 
         app_window.set_position(gtk.WIN_POS_MOUSE)
         app_window.show()
@@ -77,54 +121,55 @@ class MainWindow:
         self.work_time_all = gobject.timeout_add(1000, self.every_second)
 
         self.popup = gtk.Window(gtk.WINDOW_POPUP)
+        s = app_window.get_screen()
+        m = s.get_monitor_at_window(s.get_active_window())
+        monitor = s.get_monitor_geometry(m)
+        self.progressbar = gtk.ProgressBar()
+        self.init_rest_dialog(monitor.width, monitor.height - 50)
 
+        self.widget = TimerWidget(monitor.width - 200, monitor.height - 100)
+
+    def init_rest_dialog(self, width, height):
         self.popup.set_border_width(10)
         self.popup.set_title(u'Береги глаза, делай перерывы')
         self.popup.set_position(gtk.WIN_POS_CENTER)
         self.popup.set_resizable(False)
-        s = app_window.get_screen()
-        m = s.get_monitor_at_window(s.get_active_window())
-        monitor = s.get_monitor_geometry(m)
-        self.popup.set_size_request(monitor.width, monitor.height - 50)
+
+        self.popup.set_size_request(width, height)
         self.popup.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#000000'))
-
-        vbox_app_p = gtk.VBox(False)
-        self.popup.add(vbox_app_p)
-
-        self.progressbar = gtk.ProgressBar()
-        vbox_app_p.pack_start(self.progressbar, False, True, 0)
+        v_box_app_p = gtk.VBox(False)
+        self.popup.add(v_box_app_p)
+        v_box_app_p.pack_start(self.progressbar, False, True, 0)
         self.progressbar.set_text(u'Перерыв')
         self.progressbar.show()
 
-        self.popup_label = gtk.Label(u'<span size="30000">Пора сделать перерыв!</span>')
-        self.popup_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFFFF'))
-        self.popup_label.set_use_markup(True)
-        hbox = gtk.HBox(False, 0)
-        hbox.pack_start(self.popup_label, True, False, 100)
-        self.popup_label.show()
+        popup_label = gtk.Label(u'<span size="30000">Пора сделать перерыв!</span>')
+        popup_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFFFF'))
+        popup_label.set_use_markup(True)
+        h_box = gtk.HBox(False, 0)
+        h_box.pack_start(popup_label, True, False, 100)
+        popup_label.show()
 
         button_postpone1 = gtk.Button(stock=u'Отложить перерыв на 3 мин.')
         button_postpone1.connect("clicked", lambda w: self.postpone())
         button_postpone1.set_flags(gtk.CAN_DEFAULT)
 
-        hbox.pack_start(button_postpone1, False, False, 0)
+        h_box.pack_start(button_postpone1, False, False, 0)
 
         button_postpone2 = gtk.Button(stock=u'Отложить перерыв на 50 мин.')
         button_postpone2.connect("clicked", lambda w: self.work())
         button_postpone2.set_flags(gtk.CAN_DEFAULT)
-        hbox.pack_start(button_postpone2, False, False, 200)
+        h_box.pack_start(button_postpone2, False, False, 200)
 
         button_postpone1.show()
         button_postpone2.show()
-        hbox.show()
-        vbox_app_p.pack_start(hbox, fill=False)
-        vbox_app_p.show()
+        h_box.show()
+        v_box_app_p.pack_start(h_box, fill=False)
+        v_box_app_p.show()
 
         # Place after association to hbox/vbox to avoid the following error:
         # GtkWarning: gtkwidget.c:5460: widget not within a GtkWindow
         button_postpone1.grab_default()
-
-        return
 
     def rest(self):
         self.timer_work = 0
@@ -167,10 +212,112 @@ class MainWindow:
                 # going to rest
                 self.rest()
                 time2rest = 0
+        if self.widget.real_work_timer_on and time2rest != 0:
+            self.widget.real_work += 1
+            if self.widget_showed:
+                w_text = time_format(self.widget.real_work)
+                w_text += "\t%6.2f" % (float(self.rate) * self.widget.real_work / 3600)
 
-        self.timer_label.set_text(u'Рабочее время с момента запуска: ' + time_format(self.timer_start)
+                if not self.widget.big and len(w_text) > 15:
+                    self.widget.set_big(True)
+                self.widget.widget_label.set_text(w_text)
+
+        self.timer_label.set_text(u'Время с момента запуска: ' + time_format(self.timer_start)
                                   + u"\nДо следующего перерыва: " + time_format(time2rest))
         self.work_time_all = gobject.timeout_add(1000, self.every_second)
+
+    def show_widget(self):
+        self.widget_showed = True
+        self.button_widget.set_label(u' Скрыть виджет  ')
+        self.widget.show()
+        self.read_rate()
+
+    def hide_widget(self):
+        self.widget_showed = False
+        self.button_widget.set_label(u'Показать виджет')
+        self.widget.hide()
+        self.read_rate()
+
+    def read_rate(self):
+        try:
+            self.rate = float(self.rate_entry.get_text())
+        except ValueError:
+            self.rate_entry.set_text(str(self.rate))
+
+
+class TimerWidget(gtk.Window):
+    def __init__(self, position_x=0, position_y=0):
+        super(TimerWidget, self).__init__(gtk.WINDOW_POPUP)
+        self.widget_moving = False
+        self.widget_moving_coord = None
+        self.set_border_width(1)
+        self.set_title(u'Таймер рабочего времени')
+        self.move(position_x, position_y)
+        self.set_resizable(True)
+        self.set_can_focus(True)
+        self.set_opacity(0.6)
+        self.set_size_request(120, 60)
+        self.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#004F00'))
+        v_box = gtk.VBox(False)
+        self.add(v_box)
+        self.connect('button_press_event', self.widget_press_event)
+        self.connect('button_release_event', self.widget_release_event)
+        self.connect('motion_notify_event', self.widget_motion_notify_event)
+        self.set_events(gtk.gdk.EXPOSURE_MASK | gtk.gdk.LEAVE_NOTIFY_MASK
+                        | gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.BUTTON_RELEASE_MASK
+                        | gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.POINTER_MOTION_HINT_MASK)
+        h_box = gtk.HBox(False, 0)
+        button_timer = gtk.ToggleButton(u'Таймер')
+        button_timer.connect("toggled", self.widget_timer_toggled)
+        button_timer.set_flags(gtk.CAN_DEFAULT)
+        h_box.pack_start(button_timer)
+        button_timer.show()
+        h_box.show()
+        v_box.pack_start(h_box)
+        self.widget_label = gtk.Label(u'<small>Нажмите на кнопку</small>')
+        self.widget_label.set_use_markup(True)
+        self.widget_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.color_parse('#FFFFFF'))
+        h_box = gtk.HBox(False, 0)
+        h_box.pack_start(self.widget_label)
+        h_box.show()
+        v_box.pack_start(h_box)
+        self.widget_label.show()
+        v_box.show()
+
+        # Place after association to horizontal_box/v_box to avoid the following error:
+        # GtkWarning: gtkwidget.c:5460: widget not within a GtkWindow
+        button_timer.grab_default()
+
+        # work for money
+        self.real_work = 990
+        self.real_work_timer_on = False
+        # large window mode
+        self.big = False
+
+    def widget_timer_toggled(self, w):
+        self.real_work_timer_on = not self.real_work_timer_on
+        self.modify_bg(gtk.STATE_NORMAL,
+                       gtk.gdk.color_parse('#4F0000' if self.real_work_timer_on else '#004F00'))
+
+    def widget_press_event(self, w, e):
+        self.widget_moving = True
+        self.widget_moving_coord = -int(e.x), -int(e.y)
+
+    def widget_motion_notify_event(self, w, e):
+        if self.widget_moving:
+            x, y = self.get_position()
+            x2, y2 = self.widget_moving_coord
+            self.move(x + int(e.x) + x2, y + int(e.y) + y2)
+
+    def widget_release_event(self, w, e):
+        self.widget_moving = False
+
+    def set_big(self, value):
+        self.big = value
+        if value:
+            self.set_size_request(150, 60)
+        else:
+            self.set_size_request(120, 60)
 
 
 if __name__ == "__main__":
