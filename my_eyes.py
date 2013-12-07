@@ -35,20 +35,30 @@ class MainWindow:
         # rate $ per hour
         self.rate = 10
 
-        app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        app_window.set_size_request(450, 200)
-        app_window.set_border_width(10)
-        app_window.set_title(u'Береги глаза, делай перерывы')
-        app_window.connect("delete_event", lambda w, e: gtk.main_quit())
-        label = gtk.Label(u'<span size="10500"><b>Не забывай делать перевы.</b></span>')
-        self.timer_label = gtk.Label(u'Время с момента запуска: 0 сек.')
-
         # program's work time
         self.timer_start = 0
         # time from the last rest or beginning of resting (if user is resting now)
         self.timer_work = 0
 
         self.widget_showed = False
+
+        self.timer_label = gtk.Label(u'Время с момента запуска: 0 сек.')
+        self.rate_entry = gtk.Entry(6)
+        self.button_update_rate = gtk.Button(stock=u'Ок')
+        self.label_rate2 = gtk.Label(u'Заработано: 0.00')
+        self.button_widget = gtk.Button(stock=u'Показать виджет')
+        self.button_unset_rate = gtk.Button(stock=u'Обнулить счетчик')
+        self.work_time_all = gobject.timeout_add(1000, self.every_second)
+        self.popup = gtk.Window(gtk.WINDOW_POPUP)
+        self.progressbar = gtk.ProgressBar()
+
+        app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        app_window.set_size_request(450, 200)
+        app_window.set_border_width(10)
+        app_window.set_resizable(False)
+        app_window.set_title(u'Береги глаза, делай перерывы')
+        app_window.connect("delete_event", lambda w, e: gtk.main_quit())
+        label = gtk.Label(u'<span size="10500"><b>Не забывай делать перевы</b></span>')
 
         app_window.set_icon_from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'icon.png'))
         v_box_app = gtk.VBox(False, 0)
@@ -67,7 +77,7 @@ class MainWindow:
 
         button_rest.show()
         h_box.show()
-        v_box_app.add(h_box)
+        v_box_app.pack_start(h_box, True)
 
         # Place after association to hbox/vbox to avoid the following error:
         # GtkWarning: gtkwidget.c:5460: widget not within a GtkWindow
@@ -87,44 +97,51 @@ class MainWindow:
         h_box.show()
         v_box_app.add(h_box)
 
-        label_rate = gtk.Label(u'Почасовой тариф')
+        v_box2 = gtk.VBox(True, 0)
+        v_box2.show()
+
+        label_rate = gtk.Label(u'Почасовой тариф ')
         h_box = gtk.HBox(False, 0)
-        h_box.pack_start(label_rate)
+        v_box2.add(h_box)
+        h_box.pack_start(label_rate, False)
         label_rate.show()
 
-        self.rate_entry = gtk.Entry(6)
         self.rate_entry.set_width_chars(6)
         self.rate_entry.set_text(str(self.rate))
-        h_box.pack_start(self.rate_entry)
+        h_box.pack_start(self.rate_entry, False, False)
         self.rate_entry.show()
         self.rate_entry.connect('focus-out-event', lambda w, e: self.read_rate())
-
-        label_rate2 = gtk.Label(' ' * 20)
-
-        h_box.pack_start(label_rate2)
-        label_rate2.show()
-
-        self.button_widget = gtk.Button(stock=u'Показать виджет')
+        self.button_update_rate.connect("clicked", lambda w: self.read_rate())
+        h_box.pack_start(self.button_update_rate, False, False)
+        self.button_update_rate.show()
+        h_box.pack_start(self.label_rate2)
+        self.label_rate2.show()
         self.button_widget.connect("clicked",
                                    lambda w: self.hide_widget() if self.widget_showed else self.show_widget())
         self.button_widget.set_flags(gtk.CAN_DEFAULT)
+
+        h_box.show()
+        v_box_app.pack_start(v_box2, False, False)
+
+        h_box = gtk.HBox(False, 0)
+        self.button_unset_rate.connect("clicked", lambda w: self.timer_clear())
+        h_box.pack_start(self.button_unset_rate, False)
+        self.button_unset_rate.show()
+
         h_box.pack_start(self.button_widget)
         self.button_widget.show()
 
-        h_box.show()
         v_box_app.add(h_box)
+        h_box.show()
         self.button_widget.grab_default()
 
         app_window.set_position(gtk.WIN_POS_MOUSE)
         app_window.show()
 
-        self.work_time_all = gobject.timeout_add(1000, self.every_second)
-
-        self.popup = gtk.Window(gtk.WINDOW_POPUP)
         s = app_window.get_screen()
         m = s.get_monitor_at_window(s.get_active_window())
         monitor = s.get_monitor_geometry(m)
-        self.progressbar = gtk.ProgressBar()
+
         self.init_rest_dialog(monitor.width, monitor.height - 50)
 
         self.widget = TimerWidget(monitor.width - 200, monitor.height - 100)
@@ -214,13 +231,7 @@ class MainWindow:
                 time2rest = 0
         if self.widget.real_work_timer_on and time2rest != 0:
             self.widget.real_work += 1
-            if self.widget_showed:
-                w_text = time_format(self.widget.real_work)
-                w_text += "\t%6.2f" % (float(self.rate) * self.widget.real_work / 3600)
-
-                if not self.widget.big and len(w_text) > 15:
-                    self.widget.set_big(True)
-                self.widget.widget_label.set_text(w_text)
+            self.update_money(float(self.rate) * self.widget.real_work / 3600)
 
         self.timer_label.set_text(u'Время с момента запуска: ' + time_format(self.timer_start)
                                   + u"\nДо следующего перерыва: " + time_format(time2rest))
@@ -243,6 +254,19 @@ class MainWindow:
             self.rate = float(self.rate_entry.get_text())
         except ValueError:
             self.rate_entry.set_text(str(self.rate))
+
+    def update_money(self, money):
+        my_money = "%6.2f" % money
+        self.label_rate2.set_text(u'Заработано: ' + my_money)
+        if self.widget_showed:
+            w_text = time_format(self.widget.real_work) + "\t" + my_money
+            if not self.widget.big and len(w_text) > 15:
+                self.widget.set_big(True)
+            self.widget.widget_label.set_text(w_text)
+
+    def timer_clear(self):
+        self.widget.real_work = 0
+        self.update_money(0)
 
 
 class TimerWidget(gtk.Window):
