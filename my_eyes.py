@@ -289,7 +289,7 @@ class TimerWidget(gtk.Window):
         button_timer.grab_default()
 
         # work for money
-        self.real_work = 990
+        self.real_work = 0
         self.real_work_timer_on = False
         # large window mode
         self.big = False
