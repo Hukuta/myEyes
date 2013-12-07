@@ -12,14 +12,6 @@ pygtk.require('2.0')
 import gtk
 
 
-def time_format(tm):
-    dt = datetime.datetime.utcfromtimestamp(tm)
-    days = tm // 86400
-    if days:
-        return str(days) + u'дн. ' + dt.strftime('%H:%M:%S')
-    return dt.strftime('%H:%M:%S')
-
-
 class MainWindow:
     def __init__(self):
         # Interval between breaks 50 min
@@ -233,8 +225,8 @@ class MainWindow:
             self.widget.real_work += 1
             self.update_money(float(self.rate) * self.widget.real_work / 3600)
 
-        self.timer_label.set_text(u'Время с момента запуска: ' + time_format(self.timer_start)
-                                  + u"\nДо следующего перерыва: " + time_format(time2rest))
+        self.timer_label.set_text(u'Время с момента запуска: ' + self.time_format(self.timer_start)
+                                  + u"\nДо следующего перерыва: " + self.time_format(time2rest))
         self.work_time_all = gobject.timeout_add(1000, self.every_second)
 
     def show_widget(self):
@@ -259,7 +251,7 @@ class MainWindow:
         my_money = "%6.2f" % money
         self.label_rate2.set_text(u'Заработано: ' + my_money)
         if self.widget_showed:
-            w_text = time_format(self.widget.real_work) + "\t" + my_money
+            w_text = self.time_format(self.widget.real_work) + "\t" + my_money
             if not self.widget.big and len(w_text) > 15:
                 self.widget.set_big(True)
             self.widget.widget_label.set_text(w_text)
@@ -267,6 +259,14 @@ class MainWindow:
     def timer_clear(self):
         self.widget.real_work = 0
         self.update_money(0)
+
+    @staticmethod
+    def time_format(tm):
+        dt = datetime.datetime.utcfromtimestamp(tm)
+        days = tm // 86400
+        if days:
+            return str(days) + u'дн. ' + dt.strftime('%H:%M:%S')
+        return dt.strftime('%H:%M:%S')
 
 
 class TimerWidget(gtk.Window):
