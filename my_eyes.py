@@ -4,6 +4,7 @@
 __author__ = 'Odarchenko N.D.'
 
 import os
+import sys
 import datetime
 import gobject
 import pygtk
@@ -52,7 +53,9 @@ class MainWindow:
         app_window.connect("delete_event", lambda w, e: gtk.main_quit())
         label = gtk.Label(u'<span size="10500"><b>Не забывай делать перевы</b></span>')
 
-        app_window.set_icon_from_file(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'icon.png'))
+        system_encoding = sys.getfilesystemencoding()
+        path2icon = os.path.join(os.path.dirname(os.path.realpath(__file__)).decode(system_encoding), 'icon.png')
+        app_window.set_icon_from_file(path2icon)
         v_box_app = gtk.VBox(False, 0)
         app_window.add(v_box_app)
         v_box_app.show()
@@ -131,8 +134,11 @@ class MainWindow:
         app_window.show()
 
         s = app_window.get_screen()
-        m = s.get_monitor_at_window(s.get_active_window())
-        monitor = s.get_monitor_geometry(m)
+        active_window = s.get_active_window()
+        if active_window is None:
+            monitor = s.get_monitor_geometry(0)
+        else:
+            monitor = s.get_monitor_geometry(s.get_monitor_at_window(active_window))
 
         self.init_rest_dialog(monitor.width, monitor.height - 50)
 
