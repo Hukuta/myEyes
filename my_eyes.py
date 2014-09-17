@@ -22,7 +22,7 @@ class MainWindow:
         # breaks time 4 min
         self.break_time = 240
 
-        # 0 -> work, 1 -> rest, 2 -> postponed
+        # 0 -> work, 1 -> rest, 2 -> postponed, 3 -> no rest
         self.state = 0
 
         # rate $ per hour
@@ -44,9 +44,10 @@ class MainWindow:
         self.work_time_all = gobject.timeout_add(1000, self.every_second)
         self.popup = gtk.Window(gtk.WINDOW_POPUP)
         self.progressbar = gtk.ProgressBar()
+        self.no_rest = gtk.CheckButton(u'Отключить напоминания об отдыхе')
 
         app_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        app_window.set_size_request(450, 200)
+        app_window.set_size_request(450, 250)
         app_window.set_border_width(10)
         app_window.set_resizable(False)
         app_window.set_title(u'Береги глаза, делай перерывы')
@@ -83,6 +84,13 @@ class MainWindow:
         self.timer_label.show()
         h_box2.show()
         v_box_app.add(h_box2)
+
+        h_box = gtk.HBox(False, 0)
+        h_box.pack_start(self.no_rest, False, False, 80)
+        self.no_rest.show()
+        h_box.show()
+        v_box_app.add(h_box)
+        self.no_rest.connect("clicked", lambda w: self.postpone(forever=True))
 
         label_start_widget = gtk.Label(u'<b>Для оплачиваемой работы:</b>')
         label_start_widget.set_use_markup(True)
@@ -190,6 +198,7 @@ class MainWindow:
         button_postpone1.grab_default()
 
     def rest(self):
+        self.no_rest.set_active(False)
         self.timer_work = 0
         self.state = 1
         self.popup.show()
@@ -199,9 +208,16 @@ class MainWindow:
         self.state = 0
         self.popup.hide()
 
-    def postpone(self):
+    def postpone(self, forever=False):
+        if forever:
+            if self.no_rest.get_active():
+                self.state = 3
+            else:
+                self.work()
+                return
+        else:
+            self.state = 2
         self.timer_work = 0
-        self.state = 3
         self.popup.hide()
 
     def every_second(self):
@@ -224,12 +240,14 @@ class MainWindow:
                 self.progressbar.set_fraction(1 - float(time2work) / self.break_time)
                 progress_str = u'Перерыв закончится через %s мин. %s сек.' % (time2work // 60, time2work % 60)
                 self.progressbar.set_text(progress_str)
-        else:
+        elif self.state == 2:
             time2rest = self.interval2 - self.timer_work
             if time2rest <= 0:
                 # going to rest
                 self.rest()
                 time2rest = 0
+        elif self.state == 3:
+            time2rest = 0
         if self.widget.real_work_timer_on and time2rest != 0:
             self.widget.real_work += 1
             self.update_money(float(self.rate) * self.widget.real_work / 3600)
