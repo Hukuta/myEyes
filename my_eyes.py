@@ -14,7 +14,7 @@ import gtk
 
 
 class MainWindow:
-    def __init__(self):
+    def __init__(self, rate_per_hour, window_minimized=False):
         # Interval between breaks 50 min
         self.interval = 3000
         # interval if postponed 3 min
@@ -26,7 +26,7 @@ class MainWindow:
         self.state = 0
 
         # rate $ per hour
-        self.rate = 10
+        self.rate = rate_per_hour
 
         # program's work time
         self.timer_start = 0
@@ -143,6 +143,9 @@ class MainWindow:
         self.init_rest_dialog(monitor.width, monitor.height - 50)
 
         self.widget = TimerWidget(monitor.width - 200, monitor.height - 100)
+
+        if window_minimized:
+            app_window.iconify()
 
     def init_rest_dialog(self, width, height):
         self.popup.set_border_width(10)
@@ -351,5 +354,31 @@ class TimerWidget(gtk.Window):
 
 
 if __name__ == "__main__":
-    MainWindow()
+
+    help_str = "\r\n\t".join(("\r\nParams:",
+                              '--help\t\t\t- this help',
+                              '--minimized\t\t- minimize on startup',
+                              '--rate INT_VALUE\t- rate $ per hour')) + "\r\n"
+    # default rate $ per hour
+    rate = 10
+    minimized = False
+    if len(sys.argv) > 1:
+        rate_found = False
+        for arg in sys.argv[1:]:
+            if arg == '--minimized':
+                minimized = True
+            elif arg == '--rate':
+                rate_found = True
+            elif rate_found:
+                if int(arg) > 0:
+                    rate = int(arg)
+                    rate_found = False
+                else:
+                    print(help_str)
+                    exit(0)
+            else:
+                print(help_str)
+                exit(0)
+
+    MainWindow(rate, window_minimized=minimized)
     gtk.main()
