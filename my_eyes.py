@@ -202,6 +202,9 @@ class MainWindow:
         self.timer_work = 0
         self.state = 1
         self.popup.show()
+        # disable work time widget
+        if self.widget.real_work_timer_on:
+            self.widget.widget_timer_toggled(None)
 
     def work(self):
         self.timer_work = 0
