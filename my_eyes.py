@@ -52,7 +52,7 @@ class MainWindow:
         app_window.set_resizable(False)
         app_window.set_title(u'Береги глаза, делай перерывы')
         app_window.connect("delete_event", lambda w, e: gtk.main_quit())
-        label = gtk.Label(u'<span size="10500"><b>Не забывай делать перевы</b></span>')
+        label = gtk.Label(u'<span size="10500"><b>Не забывай делать перерывы</b></span>')
 
         system_encoding = sys.getfilesystemencoding()
         path2icon = os.path.join(os.path.dirname(os.path.realpath(__file__)).decode(system_encoding), 'icon.png')
