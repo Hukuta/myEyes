@@ -36,11 +36,12 @@ class MainWindow:
         self.widget_showed = False
 
         self.timer_label = gtk.Label(u'Время с момента запуска: 0 сек.')
-        self.rate_entry = gtk.Entry(6)
-        self.button_update_rate = gtk.Button(stock=u'Ок')
-        self.label_rate2 = gtk.Label(u'Заработано: 0.00')
-        self.button_widget = gtk.Button(stock=u'Показать виджет')
-        self.button_unset_rate = gtk.Button(stock=u'Обнулить счетчик')
+        if rate_per_hour > 0:
+            self.rate_entry = gtk.Entry(6)
+            self.button_update_rate = gtk.Button(stock=u'Ок')
+            self.label_rate2 = gtk.Label(u'Заработано: 0.00')
+            self.button_widget = gtk.Button(stock=u'Показать виджет')
+            self.button_unset_rate = gtk.Button(stock=u'Обнулить счетчик')
         self.work_time_all = gobject.timeout_add(1000, self.every_second)
         self.popup = gtk.Window(gtk.WINDOW_POPUP)
         self.progressbar = gtk.ProgressBar()
@@ -92,51 +93,54 @@ class MainWindow:
         v_box_app.add(h_box)
         self.no_rest.connect("clicked", lambda w: self.postpone(forever=True))
 
-        label_start_widget = gtk.Label(u'<b>Для оплачиваемой работы:</b>')
-        label_start_widget.set_use_markup(True)
-        h_box = gtk.HBox(False, 0)
-        h_box.pack_start(label_start_widget)
-        label_start_widget.show()
-        h_box.show()
-        v_box_app.add(h_box)
+        if hasattr(self, 'rate_entry'):
 
-        v_box2 = gtk.VBox(True, 0)
-        v_box2.show()
+            label_start_widget = gtk.Label(u'<b>Для оплачиваемой работы:</b>')
+            label_start_widget.set_use_markup(True)
+            h_box = gtk.HBox(False, 0)
+            h_box.pack_start(label_start_widget)
+            label_start_widget.show()
+            h_box.show()
+            v_box_app.add(h_box)
 
-        label_rate = gtk.Label(u'Почасовой тариф ')
-        h_box = gtk.HBox(False, 0)
-        v_box2.add(h_box)
-        h_box.pack_start(label_rate, False)
-        label_rate.show()
+            v_box2 = gtk.VBox(True, 0)
+            v_box2.show()
 
-        self.rate_entry.set_width_chars(6)
-        self.rate_entry.set_text(str(self.rate))
-        h_box.pack_start(self.rate_entry, False, False)
-        self.rate_entry.show()
-        self.rate_entry.connect('focus-out-event', lambda w, e: self.read_rate())
-        self.button_update_rate.connect("clicked", lambda w: self.read_rate())
-        h_box.pack_start(self.button_update_rate, False, False)
-        self.button_update_rate.show()
-        h_box.pack_start(self.label_rate2)
-        self.label_rate2.show()
-        self.button_widget.connect("clicked",
-                                   lambda w: self.hide_widget() if self.widget_showed else self.show_widget())
-        self.button_widget.set_flags(gtk.CAN_DEFAULT)
+            label_rate = gtk.Label(u'Почасовой тариф ')
+            h_box = gtk.HBox(False, 0)
+            v_box2.add(h_box)
+            h_box.pack_start(label_rate, False)
+            label_rate.show()
 
-        h_box.show()
-        v_box_app.pack_start(v_box2, False, False)
 
-        h_box = gtk.HBox(False, 0)
-        self.button_unset_rate.connect("clicked", lambda w: self.timer_clear())
-        h_box.pack_start(self.button_unset_rate, False)
-        self.button_unset_rate.show()
+            self.rate_entry.set_width_chars(6)
+            self.rate_entry.set_text(str(self.rate))
+            h_box.pack_start(self.rate_entry, False, False)
+            self.rate_entry.show()
+            self.rate_entry.connect('focus-out-event', lambda w, e: self.read_rate())
+            self.button_update_rate.connect("clicked", lambda w: self.read_rate())
+            h_box.pack_start(self.button_update_rate, False, False)
+            self.button_update_rate.show()
+            h_box.pack_start(self.label_rate2)
+            self.label_rate2.show()
+            self.button_widget.connect("clicked",
+                                       lambda w: self.hide_widget() if self.widget_showed else self.show_widget())
+            self.button_widget.set_flags(gtk.CAN_DEFAULT)
 
-        h_box.pack_start(self.button_widget)
-        self.button_widget.show()
+            h_box.show()
+            v_box_app.pack_start(v_box2, False, False)
 
-        v_box_app.add(h_box)
-        h_box.show()
-        self.button_widget.grab_default()
+            h_box = gtk.HBox(False, 0)
+            self.button_unset_rate.connect("clicked", lambda w: self.timer_clear())
+            h_box.pack_start(self.button_unset_rate, False)
+            self.button_unset_rate.show()
+
+            h_box.pack_start(self.button_widget)
+            self.button_widget.show()
+
+            v_box_app.add(h_box)
+            h_box.show()
+            self.button_widget.grab_default()
 
         app_window.set_position(gtk.WIN_POS_MOUSE)
         app_window.show()
@@ -391,7 +395,7 @@ if __name__ == "__main__":
             elif arg == '--rate':
                 rate_found = True
             elif rate_found:
-                if int(arg) > 0:
+                if int(arg) >= 0:
                     rate = int(arg)
                     rate_found = False
                 else:
